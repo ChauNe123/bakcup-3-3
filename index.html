@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0, viewport-fit=cover">
+    
+    <title>KB | ENTERPRISE</title>
+    
+    <link rel="icon" type="image/png" href="logo.png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="assets/styles.css">
+
+    <style type="text/tailwindcss">
+        .input-premium { @apply w-full bg-slate-50 border border-slate-200 text-slate-900 text-sm rounded-lg focus:ring-[3px] focus:ring-red-500/20 focus:border-red-500 focus:bg-white block p-2.5 outline-none transition-all duration-200; }
+        .label-premium { @apply block mb-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider; }
+        .tab-btn { @apply flex-1 py-3.5 text-center text-[12px] font-bold text-slate-500 uppercase tracking-widest transition-all duration-300 border-b-2 border-transparent; }
+        .tab-btn.active { @apply border-red-600 text-red-600 bg-red-50/50; }
+    </style>
+
+    <style>
+        @media (max-width: 768px) {
+            /* Fix triệt để lỗi mất nút dưới đáy màn hình của Safari */
+            body, html {
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+                overflow-x: hidden;
+            }
+            
+            /* Chuyển layout từ 2 cột ngang sang 2 cột dọc */
+            #appContainer {
+                flex-direction: column !important;
+                height: auto !important;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+            }
+            
+            /* Khung nhập liệu (Sidebar): Đẩy lên trên, cho phép cuộn độc lập */
+            #appContainer > .w-\\[520px\\] {
+                width: 100% !important;
+                height: auto !important;
+                max-height: 60vh; /* Chỉ chiếm 60% màn hình để chừa chỗ cho bản Preview */
+                border-right: none !important;
+                border-bottom: 4px solid #cbd5e1;
+            }
+            
+            /* Ép Font-size 16px chống iOS tự động Zoom khi chạm vào ô nhập liệu */
+            input, select, textarea {
+                font-size: 16px !important; 
+            }
+            
+            /* Thu gọn lề bản Preview trên Mobile */
+            .print-area {
+                width: 100% !important;
+                padding: 12px !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 h-screen flex overflow-hidden font-sans text-slate-800 selection:bg-red-200">
+
+    <div id="login-container"></div>
+
+    <div id="appContainer" class="flex w-full h-full opacity-0 pointer-events-none transition-opacity duration-500 delay-200">
+        
+        <div class="w-[520px] bg-white shadow-xl no-print flex flex-col shrink-0 border-r border-slate-200 z-10 h-full">
+            
+            <div class="bg-slate-900 p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
+                <div>
+                    <div class="text-white font-extrabold text-xl tracking-tight">KB<span class="text-red-500">TECH</span> PORTAL</div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-xs text-emerald-400 font-semibold" id="currentUserDisplay">Online</span>
+                    <button onclick="logout()" class="text-slate-400 hover:text-white transition text-xs border border-slate-600 px-2 py-1 rounded">Đăng xuất</button>
+                </div>
+            </div>
+
+            <div class="flex border-b border-slate-200 bg-slate-50/50 shrink-0">
+                <button onclick="switchTab('form-tab')" id="btn-form-tab" class="tab-btn active hover:text-red-600">Hồ sơ mới</button>
+                <button onclick="switchTab('history-tab'); loadHistoryFromDB()" id="btn-history-tab" class="tab-btn hover:text-red-600">Lịch sử</button>
+            </div>
+
+            <div id="form-tab" class="flex-1 overflow-y-auto custom-scroll p-6 pb-6">
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div><label class="label-premium">Ngày lập hồ sơ</label><input type="date" id="docDate" class="input-premium" onchange="handleDateChange()"></div>
+                    <div><label class="label-premium">Dự án</label><input type="text" id="projectName" class="input-premium" oninput="updateDoc()"></div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div><label class="label-premium">Số Báo Giá</label><input type="text" id="quoteNo" class="input-premium font-bold text-red-700 bg-red-50 border-red-200" oninput="updateDoc()"></div>
+                    <div><label class="label-premium">Số Hợp đồng</label><input type="text" id="contractNo" class="input-premium font-bold" oninput="updateDoc()"></div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-slate-50 to-white p-5 rounded-2xl border border-slate-200 mb-6 shadow-sm">
+                    <h3 class="font-extrabold text-slate-800 uppercase mb-4 text-[13px]">Thông tin Đối tác</h3>
+                    <div class="space-y-3">
+                        <input type="text" id="buyerName" placeholder="Tên công ty" class="input-premium font-bold" oninput="updateDoc()">
+                        <input type="text" id="buyerAddress" placeholder="Địa chỉ trụ sở" class="input-premium" oninput="updateDoc()">
+                        <input type="text" id="deliveryAddress" placeholder="Địa chỉ giao hàng" class="input-premium border-dashed" oninput="updateDoc()">
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="buyerTax" placeholder="Mã số thuế" class="input-premium" oninput="updateDoc()">
+                            <input type="text" id="buyerPhone" placeholder="Số điện thoại" class="input-premium" oninput="updateDoc()">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input type="text" id="buyerRep" placeholder="Người đại diện" class="input-premium" oninput="updateDoc()">
+                            <input type="text" id="buyerRole" placeholder="Chức vụ" class="input-premium" oninput="updateDoc()">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label class="label-premium">Thanh toán</label>
+                    <select id="paymentOpt" class="input-premium" onchange="updateDoc()">
+                        <option value="50"> Thanh toán 50 / 50</option>
+                        <option value="100"> Thanh toán 100%</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-between items-center mb-4">
+                    <label class="label-premium mb-0">Hạng mục Sản phẩm</label>
+                    <button onclick="addProductRow()" class="text-[11px] bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm">Thêm SP</button>
+                </div>
+                <div id="productList" class="space-y-4 mb-6"></div>
+                
+                <button onclick="saveQuoteToDB()" id="btnSaveDB" class="w-full bg-red-50 text-red-600 border border-red-200 font-bold py-3.5 rounded-xl hover:bg-red-100 transition-all shadow-sm">LƯU LÊN NAS</button>
+            </div>
+
+            <div id="history-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="font-extrabold text-slate-800 text-[13px] uppercase">Lịch sử</h3>
+                    <button onclick="loadHistoryFromDB()" class="text-[11px] bg-white border px-3 py-1.5 rounded-lg font-bold shadow-sm">🔄 Tải lại</button>
+                </div>
+                <div id="historyList"></div>
+            </div>
+
+            <div class="shrink-0 bg-white border-t border-slate-200 p-4 z-20">
+                <div class="flex gap-3 mb-3">
+                    <button onclick="createNewDocument(false)" class="flex-1 border-2 border-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:text-red-600 text-sm">TẠO MỚI</button>
+                    <button onclick="printSection('all')" class="flex-[1.5] bg-red-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-red-700 text-sm">IN TOÀN BỘ</button>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="printSection('quote-section')" class="flex-1 bg-slate-800 text-white font-semibold py-2 rounded-lg text-[11px] uppercase">Báo giá</button>
+                    <button onclick="printSection('contract-section')" class="flex-1 bg-slate-800 text-white font-semibold py-2 rounded-lg text-[11px] uppercase">Hợp đồng</button>
+                    <button onclick="printSection('acceptance-section')" class="flex-1 bg-slate-800 text-white font-semibold py-2 rounded-lg text-[11px] uppercase">Nghiệm thu</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-auto custom-scroll p-4 md:p-10 print-area bg-slate-200">
+            <div id="documentPreview" class="bg-white w-[210mm] min-w-[210mm] mx-auto min-h-[297mm] p-[15mm] shadow-2xl relative shrink-0">
+                </div>
+        </div>
+        
+    </div>
+
+    <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<div id="loginOverlay" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-50 flex items-center justify-center transition-opacity duration-500">
+    <div class="bg-white w-[400px] rounded-2xl shadow-2xl overflow-hidden transform transition-all">
+        <div class="bg-slate-900 p-6 text-center border-b-4 border-red-600">
+            <div class="text-white font-extrabold text-2xl tracking-tight">KB<span class="text-red-500">TECH</span></div>
+            <div class="text-xs text-slate-400 font-medium tracking-widest uppercase mt-1">Hệ thống quản lý nội bộ</div>
+        </div>
+        <div class="p-8">
+            <div id="loginError" class="hidden bg-red-50 text-red-600 text-sm p-3 rounded-lg mb-4 border border-red-200 text-center font-bold"></div>
+            <div class="space-y-4">
+                <div>
+                    <label class="label-premium">Tài khoản</label>
+                    <input type="text" id="username" class="input-premium" placeholder="Nhập tài khoản...">
+                </div>
+                <div>
+                    <label class="label-premium">Mật khẩu</label>
+                    <input type="password" id="password" class="input-premium" placeholder="••••••••" onkeypress="if(event.key === 'Enter') login()">
+                </div>
+                <button onclick="login()" id="btnLogin" class="w-full bg-red-600 text-white font-bold py-3 rounded-xl hover:bg-red-700 transition-all shadow-md mt-4">
+                    ĐĂNG NHẬP
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

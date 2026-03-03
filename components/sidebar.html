@@ -1,0 +1,101 @@
+<div class="w-[520px] bg-white shadow-[8px_0_24px_rgba(15,23,42,0.04)] no-print flex flex-col shrink-0 border-r border-slate-200 z-10 h-full">
+    
+    <div class="bg-slate-900 p-5 flex items-center justify-between border-b border-slate-800 shrink-0">
+        <div>
+            <div class="text-white font-extrabold text-xl tracking-tight">KB<span class="text-red-500">TECH</span> PORTAL</div>
+            <div class="text-[10px] text-slate-400 font-medium tracking-widest uppercase mt-0.5">Enterprise Document System</div>
+        </div>
+        <div class="flex items-center gap-4">
+            <div class="flex items-center gap-2">
+                <span class="flex h-2.5 w-2.5 relative">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs text-emerald-400 font-semibold" id="currentUserDisplay">Online</span>
+            </div>
+            <button onclick="logout()" class="text-slate-400 hover:text-white transition" title="Đăng xuất">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <div class="flex border-b border-slate-200 bg-slate-50/50 shrink-0">
+        <button onclick="switchTab('form-tab')" id="btn-form-tab" class="tab-btn border-b-2 border-red-600 text-red-600 active hover:text-red-600">Hồ sơ mới</button>
+        <button onclick="switchTab('history-tab'); loadHistoryFromDB()" id="btn-history-tab" class="tab-btn hover:text-red-600">Lịch sử Đối tác</button>
+    </div>
+
+    <div id="form-tab" class="flex-1 overflow-y-auto custom-scroll p-6 pb-6">
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div><label class="label-premium">Ngày lập hồ sơ</label><input type="date" id="docDate" class="input-premium" onchange="handleDateChange()"></div>
+            <div><label class="label-premium">Tên Dự án (Job)</label><input type="text" id="projectName" placeholder="Vd: SERVER LƯU TRỮ..." class="input-premium" oninput="updateDoc()"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+            <div><label class="label-premium">Số Báo Giá</label><input type="text" id="quoteNo" class="input-premium font-['JetBrains_Mono'] text-red-700 bg-red-50/50 font-bold border-red-200" oninput="updateDoc()"></div>
+            <div><label class="label-premium">Số Hợp đồng</label><input type="text" id="contractNo" class="input-premium font-['JetBrains_Mono'] font-bold" oninput="updateDoc()"></div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-50 to-white p-5 rounded-2xl border border-slate-200 mb-6 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-1.5 h-full bg-red-500"></div>
+            <h3 class="font-extrabold text-slate-800 uppercase mb-4 text-[13px] tracking-wide flex items-center gap-2">Thông tin Đối tác</h3>
+            <div class="space-y-3">
+                <input type="text" id="buyerName" placeholder="Tên công ty (Vd: CÔNG TY TNHH FOCUS SUCCESS)" class="input-premium font-bold text-slate-800" oninput="updateDoc()">
+                <input type="text" id="buyerAddress" placeholder="Địa chỉ trụ sở pháp lý" class="input-premium" oninput="updateDoc()">
+                <input type="text" id="deliveryAddress" placeholder="Địa chỉ giao hàng (Bỏ trống nếu trùng trụ sở)" class="input-premium border-dashed bg-transparent" oninput="updateDoc()">
+                <div class="grid grid-cols-2 gap-3"><input type="text" id="buyerTax" placeholder="Mã số thuế" class="input-premium" oninput="updateDoc()"><input type="text" id="buyerPhone" placeholder="Số điện thoại" class="input-premium" oninput="updateDoc()"></div>
+                <div class="grid grid-cols-2 gap-3"><input type="text" id="buyerRep" placeholder="Người đại diện / Người nhận" class="input-premium" oninput="updateDoc()"><input type="text" id="buyerRole" placeholder="Chức vụ" class="input-premium" oninput="updateDoc()"></div>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <label class="label-premium">Phương thức Thanh toán (Hợp đồng)</label>
+            <select id="paymentOpt" class="input-premium cursor-pointer" onchange="updateDoc()">
+                <option value="50">Đợt 1: 50% - Đợt 2: 50% (Mặc định)</option>
+                <option value="100">Thanh toán 100% sau khi ký</option>
+            </select>
+        </div>
+
+        <div>
+            <div class="flex justify-between items-center mb-4">
+                <label class="label-premium mb-0">Hạng mục Sản phẩm & Dịch vụ</label>
+                <button onclick="addProductRow()" class="text-[11px] bg-slate-800 hover:bg-slate-900 text-white px-3 py-1.5 rounded-lg font-bold transition-all shadow-sm flex items-center gap-1.5 uppercase tracking-wide">
+                    + Thêm dòng
+                </button>
+            </div>
+            
+            <div id="productList" class="space-y-4 mb-6"></div>
+        </div>
+        
+        <div class="pt-6 border-t border-slate-200">
+            <button onclick="saveQuoteToDB()" id="btnSaveDB" class="w-full bg-red-50 text-red-600 border border-red-200 font-bold py-3.5 rounded-xl hover:bg-red-100 transition-all flex items-center justify-center gap-2 shadow-sm">
+                LƯU VÀO SERVER NAS
+            </button>
+        </div>
+    </div>
+
+    <div id="history-tab" class="hidden flex-1 overflow-y-auto custom-scroll p-6 pb-24 bg-slate-50/50">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="font-extrabold text-slate-800 text-[13px] uppercase tracking-wide">Lịch sử máy chủ</h3>
+            <button onclick="loadHistoryFromDB()" class="text-[11px] bg-white border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg hover:border-slate-400 transition-all font-bold shadow-sm uppercase">
+                🔄 Tải lại dữ liệu
+            </button>
+        </div>
+        <div id="historyList" class="space-y-4"></div>
+    </div>
+
+    <div class="shrink-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-20">
+        <div class="flex gap-3 mb-3">
+            <button onclick="createNewDocument(false)" class="flex-1 bg-white border-2 border-slate-200 text-slate-600 font-bold py-3 rounded-xl hover:border-red-500 hover:text-red-600 transition-all flex justify-center items-center gap-2 text-sm">
+                LÀM MỚI
+            </button>
+            <button onclick="printSection('all')" class="flex-[1.5] bg-red-600 text-white font-bold py-3 rounded-xl shadow-md hover:bg-red-700 transition-all flex justify-center items-center gap-2 text-sm">
+                IN TOÀN BỘ HỒ SƠ
+            </button>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="printSection('quote-section')" class="flex-1 bg-slate-800 text-white font-semibold py-2 rounded-lg hover:bg-slate-900 transition-colors flex justify-center items-center gap-1.5 text-[11px] tracking-wide uppercase">Báo giá</button>
+            <button onclick="printSection('contract-section')" class="flex-1 bg-slate-800 text-white font-semibold py-2 rounded-lg hover:bg-slate-900 transition-colors flex justify-center items-center gap-1.5 text-[11px] tracking-wide uppercase">Hợp đồng</button>
+            <button onclick="printSection('acceptance-section')" class="flex-1 bg-slate-800 text-white font-semibold py-2 rounded-lg hover:bg-slate-900 transition-colors flex justify-center items-center gap-1.5 text-[11px] tracking-wide uppercase">Nghiệm thu</button>
+        </div>
+    </div>
+</div>
